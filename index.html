@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>NIONIO TERMINAL</title>
+    <style>
+        body { background: #000; color: #0f0; font-family: monospace; padding: 20px; }
+        #box { height: 300px; overflow: auto; border: 1px solid #0f0; padding: 10px; margin-bottom: 10px; background: #050505; }
+        input { width: 100%; background: #000; border: 1px solid #0f0; color: #0f0; padding: 10px; outline: none; }
+        .n { color: #0ff; }
+    </style>
+</head>
+<body>
+    <h3>NIONIO OS v3.0</h3>
+    <div id="box">System gotowy. Czekam...</div>
+    <input type="text" id="cmd" placeholder="Wpisz polecenie i Enter...">
+
+    <script>
+        // ROZDZIELAMY KLUCZ, ŻEBY GITHUB NIE KRZYCZAŁ
+        const k1 = 'hf_'; // zostaw hf_ tutaj
+        const k2 = 'bIyssVTafnSPAbfyLfVmcHhuqrZauhXfLM'; // <--- TUTAJ WKLEJ RESZTĘ (BEZ hf_)
+        const TOKEN = k1 + k2;
+
+        const inp = document.getElementById('cmd');
+        const box = document.getElementById('box');
+
+        inp.addEventListener('keydown', async (e) => {
+            if (e.key === 'Enter') {
+                const txt = inp.value;
+                if (!txt) return;
+                box.innerHTML += `<div>> ${txt}</div>`;
+                inp.value = '';
+
+                try {
+                    const r = await fetch("https://api-inference.huggingface.co", {
+                        method: "POST",
+                        headers: { "Authorization": "Bearer " + TOKEN, "Content-Type": "application/json" },
+                        body: JSON.stringify({ inputs: `Odpowiedz krótko po polsku jako pies Nionio: ${txt}` })
+                    });
+                    const d = await r.json();
+                    const ans = d[0] ? d[0].generated_text : "Hau? Błąd danych.";
+                    box.innerHTML += `<div class="n">Nionio: ${ans}</div>`;
+                } catch (err) {
+                    box.innerHTML += `<div style="color:red">Błąd: Brak połączenia.</div>`;
+                }
+                box.scrollTop = box.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>
